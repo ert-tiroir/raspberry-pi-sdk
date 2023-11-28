@@ -1,8 +1,9 @@
 
 /**********************************************************************************/
-/* rpi/virtual/testing.cpp                                                        */
+/* rpi/stdlib.h                                                                   */
 /*                                                                                */
-/* This file implements the behavior for testing in the virtual context.          */
+/* This file inputs all of the files present in the SDK for the user, and         */
+/* declares functions that allow the user to reset the virtual states of the SDK  */
 /**********************************************************************************/
 /*                   This file is part of the Raspberry Pi SDK                    */
 /*                     github.com/ert-tiroir/raspberry-pi-sdk                     */
@@ -28,73 +29,7 @@
 /* SOFTWARE.                                                                      */
 /**********************************************************************************/
 
-#include <rpi/stdlib.h>
+#include <rpi/iostream.h>
+#include <rpi/testing.h>
 
-#include <algorithm>
-
-std::string padTo (std::string str, int size) {
-    while (str.size() < size)
-        str += " ";
-    return str;
-}
-
-void TestRunner::register_test (TestCase* test) {
-    test_cases.push_back( test );
-}
-
-void TestRunner::run_all () {
-    bool auto_flush_state = auto_flush();
-
-    use_auto_flush();
-    printf("Running test cases...\n\n");
-
-    std::sort( test_cases.begin(), test_cases.end(), [](TestCase* a, TestCase* b) {
-        return a->getTestMetadata() < b->getTestMetadata();
-    } );
-
-    int maxNameSize = 0;
-    for (TestCase* testCase : test_cases) {
-        TestCase_Information testInfo = testCase->getTestMetadata();
-    
-        maxNameSize = std::max( maxNameSize, (int) testInfo.name.size() );
-    }
-
-    std::string lastGroup = "";
-    for (TestCase* testCase : test_cases) {
-        TestCase_Information testInfo = testCase->getTestMetadata();
-        if (lastGroup != testInfo.group) {
-            printf("Running test group '%s'...\n", testInfo.group.c_str());
-            lastGroup = testInfo.group;
-        }
-
-        std::string name = padTo("'" + testInfo.name + "'...", maxNameSize + 7);
-
-        printf("    Running test %s", name.c_str());
-
-        reset_stdlib();
-        testCase->setup();
-
-        bool result = testCase->run();
-
-        clear_buffer  ();
-        use_auto_flush();
-
-        if (result) {
-            printf("\033[1;32mOK\n");
-        } else { printf("\033[1;31mWRONG ANSWER\033[0m"); }
-
-        printf("\n");
-    }
-
-    stop_auto_flush();
-    if (auto_flush_state)
-        use_auto_flush();
-}
-
-void run_all (construct_runner func) {
-    TestRunner* runner = func();
-
-    runner->run_all();
-
-    delete runner;
-}
+void reset_stdlib ();
