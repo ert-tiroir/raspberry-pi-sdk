@@ -11,6 +11,7 @@ virtual.build:
 	make -B clean
 
 	cp -r rpi build
+	cp -r tests build
 	cp entry.cpp build/
 	rm -rf build/rpi/local
 
@@ -27,6 +28,7 @@ local.build:
 	make -B clean
 
 	cp -r rpi build
+	cp -r tests build
 	cp entry.cpp build/
 	rm -rf build/rpi/virtual
 

@@ -60,6 +60,15 @@ void TestRunner::run_all () {
     }
 
     std::string lastGroup = "";
+
+    std::vector<bool>        results (test_cases.size());
+    std::vector<std::string> stdouts (test_cases.size());
+    int index = 0;
+
+    int total = 0;
+    int valid = 0;
+    int error = 0;
+
     for (TestCase* testCase : test_cases) {
         TestCase_Information testInfo = testCase->getTestMetadata();
         if (lastGroup != testInfo.group) {
@@ -76,14 +85,52 @@ void TestRunner::run_all () {
 
         bool result = testCase->run();
 
+        results[index] = result;
+        stdouts[index] = get_buffer();
+        index ++;
+
+        total ++;
+        if (result) valid ++;
+        else        error ++;
+
         clear_buffer  ();
         use_auto_flush();
 
         if (result) {
-            printf("\033[1;32mOK\n");
+            printf("\033[1;32mOK\033[0m");
         } else { printf("\033[1;31mWRONG ANSWER\033[0m"); }
 
         printf("\n");
+    }
+
+    use_auto_flush();
+
+    printf("\n");
+
+    index = - 1;
+    for (TestCase* testCase : test_cases) {
+        index ++;
+        if (results[index]) continue ;
+
+        TestCase_Information testInfo = testCase->getTestMetadata();
+    
+        printf("========= STDOUT for test case %s::%s =========\n", testInfo.group.c_str(), testInfo.name.c_str());
+        printf("%s", stdouts[index].c_str());
+        if (stdouts[index].size() == 0 || stdouts[index][stdouts[index].size() - 1] != '\n')
+            printf("\n");
+    } 
+
+    printf("DIAGNOSTICS FOR THE TESTED PROJECT\n\n");
+    printf("         TEST CASES COUNT : %d\n\n", total);
+    printf("         VALID TEST CASES : %d\n", valid);
+    printf("         WRONG TEST CASES : %d\n\n", error);
+
+    if (valid == total && error == 0) {
+        printf("The software is production ready.\n\n");
+        exit(0);
+    } else {
+        printf("THERE IS AN ERROR, THE SOFTWARE IS NOT PRODUCTION READY.\n\n");
+        exit(1);
     }
 
     stop_auto_flush();
