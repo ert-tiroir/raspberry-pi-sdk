@@ -45,7 +45,7 @@ public:
 
         std::string result = get_buffer(); clear_buffer();
 
-        if (result == expected_buffer) {
+        if (result != expected_buffer) {
             printf("Error, virtual printf did not have the expected behavior\n\n");
             printf("/****************** result ******************/\n%s\n", result.c_str());
             printf("/***************** expected *****************/\n%s\n", expected_buffer.c_str());

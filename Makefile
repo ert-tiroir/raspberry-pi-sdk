@@ -2,6 +2,10 @@
 SOURCEDIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))/build
 SOURCES   := $(shell find $(SOURCEDIR) -name '*.cpp')
 
+ifeq ($(COMPILER),)
+COMPILER := g++
+endif
+
 clean:
 	-[ -e build/out ] && rm -f build/out
 	-[ -e out ] && rm -f out
@@ -15,12 +19,12 @@ virtual.build:
 	cp entry.cpp build/
 	rm -rf build/rpi/local
 
-	make -B virtual.compile
+	make -B virtual.compile COMPILER="$(COMPILER)"
 virtual.compile:
-	g++ -o build/out -DVIRTUAL -I./build $(SOURCES)
+	$(COMPILER) -o build/out -DVIRTUAL -I./build $(SOURCES)
 	cp build/out .
 virtual.run:
-	make -B virtual.build
+	make -B virtual.build COMPILER="$(COMPILER)"
 	./out
 
 local.build:
@@ -32,10 +36,10 @@ local.build:
 	cp entry.cpp build/
 	rm -rf build/rpi/virtual
 
-	make -B local.compile
+	make -B local.compile COMPILER="$(COMPILER)"
 local.compile:
-	g++ -o build/out -I./build $(SOURCES)
+	$(COMPILER) -o build/out -I./build $(SOURCES)
 	cp build/out .
 local.run:
-	make -B local.build
+	make -B local.build COMPILER="$(COMPILER)"
 	./out
